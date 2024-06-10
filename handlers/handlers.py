@@ -2,9 +2,12 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram import Router
 
-water_metrics = {}
+from database.database import Database
+from utils.utils import format_metrics
 
 router = Router()
+
+db = Database()
 
 @router.message(Command('start'))
 async def send_welcome(message: Message):
@@ -23,27 +26,19 @@ async def help_message(message: Message):
 @router.message(Command('metrics'))
 async def view_metrics(message: Message):
     user_id = message.from_user.id
-    if user_id in water_metrics:
-        metrics = water_metrics[user_id]
-        response = "Your water metrics:\n" + "\n".join([f"{amount} {unit}" for amount, unit in metrics])
-    else:
-        response = "You have not recorded any water metrics yet."
+    metrics = db.get_metrics(user_id)
+    response = format_metrics(metrics)
     await message.answer(response)
 
+
 @router.message()
-async def record_metrics(message: Message):
+async def record_metrics_handler(message: Message):
     user_id = message.from_user.id
     text = message.text
+    amount, unit = text.split()
 
-    try:
-        amount, unit = text.split()
-        amount = float(amount)
-    except ValueError:
-        await message.answer("Invalid format. Please send in the format: 'amount unit', e.g., '200 ml'.")
-        return
-
-    if user_id not in water_metrics:
-        water_metrics[user_id] = []
-
-    water_metrics[user_id].append((amount, unit))
-    await message.answer(f"Recorded: {amount} {unit}")
+    recorded_amount, recorded_unit = db.add_metrics(user_id, amount, unit)
+    if recorded_amount is not None:
+        await message.answer(f"Recorded: {recorded_amount} {recorded_unit}")
+    else:
+        await message.answer("Failed to record metrics. Please try again.")
