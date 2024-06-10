@@ -9,6 +9,7 @@ router = Router()
 
 db = Database()
 
+
 @router.message(Command('start'))
 async def send_welcome(message: Message):
     await message.answer("Welcome! Send me your water metrics in the format: 'amount unit', e.g., '200 ml'.")

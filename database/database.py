@@ -48,6 +48,16 @@ class Database:
 
         return add_metrics_for_user
 
+    @property
+    def close_database(self):
+        try:
+            if self._session is not None:
+                self._session.close_all()
+        except Exception as e:
+            print(f"Error closing database: {e}")
+
+        return
+
 
 class WaterMetric(Base):
     __tablename__ = 'water_metrics'
