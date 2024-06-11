@@ -1,7 +1,7 @@
 import logging
 import asyncio
-from aiogram import Dispatcher
-from handlers.bot import router, setup_handlers
+from aiogram import Dispatcher, Router
+from handlers.bot import setup_handlers
 from loader.loader import init_bot, init_database
 from database.repositories import WaterMetricRepository
 
@@ -15,6 +15,8 @@ async def main():
 
     db_session = db.get_session()
     db_repository = WaterMetricRepository(db_session)
+
+    router = Router()
 
     setup_handlers(router, db_repository)
 

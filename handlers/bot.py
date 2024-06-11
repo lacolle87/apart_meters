@@ -1,10 +1,7 @@
 from aiogram.filters import Command
 from aiogram.types import Message
-from aiogram import Router
 from utils.utils import format_metrics
 from database.repositories import WaterMetricRepository
-
-router = Router()
 
 
 def setup_handlers(router, db_repository: WaterMetricRepository):
