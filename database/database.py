@@ -1,24 +1,23 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
 
 class Database:
-    _engine = None
-    _session = None
+    def __init__(self, db_uri):
+        self._engine = create_engine(db_uri)
+        self._session = None
 
     @property
     def engine(self):
-        if self._engine is None:
-            self._engine = create_engine('sqlite:///water_metrics.db')
         return self._engine
 
     @property
     def session(self):
         if self._session is None:
-            self._session = sessionmaker(bind=self.engine)
+            self._session = scoped_session(sessionmaker(bind=self.engine))
         return self._session
 
     @property
@@ -52,20 +51,17 @@ class Database:
     def close_database(self):
         try:
             if self._session is not None:
-                self._session.close_all()
+                self._session.remove()
+                return "Database closed successfully."
         except Exception as e:
-            print(f"Error closing database: {e}")
+            return f"Failed to close database: {e}"
 
-        return
+        return "Database was already closed or not initialized."
 
 
 class WaterMetric(Base):
     __tablename__ = 'water_metrics'
-
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
     amount = Column(Float)
     unit = Column(String)
-
-
-Base.metadata.create_all(Database().engine)

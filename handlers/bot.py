@@ -2,12 +2,9 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram import Router
 
-from database.database import Database
 from utils.utils import format_metrics
 
 router = Router()
-
-db = Database()
 
 
 @router.message(Command('start'))

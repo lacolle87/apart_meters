@@ -1,20 +1,15 @@
-import os
 import logging
 import asyncio
-from aiogram import Bot, Dispatcher
-from dotenv import load_dotenv
+from aiogram import Dispatcher
 from handlers.bot import router
-
-load_dotenv()
-
-API_TOKEN = os.getenv('API_TOKEN')
+from loader.loader import init_bot, init_database
 
 
 async def main():
     logging.basicConfig(level=logging.INFO)
 
-    bot = Bot(token=API_TOKEN)
-
+    bot = init_bot()
+    db = init_database()
     dp = Dispatcher()
 
     dp.include_router(router)
@@ -24,8 +19,7 @@ async def main():
     except KeyboardInterrupt:
         logging.info("Keyboard interrupt received, stopping the program gracefully.")
     finally:
-        db.close_database()
-
+        print(db.close_database)
 
 if __name__ == '__main__':
     asyncio.run(main())
