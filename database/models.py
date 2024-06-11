@@ -18,7 +18,7 @@ class Rates(Base):
     id = Column(Integer, primary_key=True)
     electric_rate = Column(Float)
     water_rate = Column(Float)
-    drainage = Column(Float)
+    drainage_rate = Column(Float)
 
 
 class Metric(Base):
