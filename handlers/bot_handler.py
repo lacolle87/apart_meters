@@ -2,11 +2,11 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram import Router
 from utils.utils import format_metrics
-from database.repositories import WaterMetricRepository
+from database.repositories import MetricRepository
 
 
 class BotHandler:
-    def __init__(self, router: Router, db_repository: WaterMetricRepository):
+    def __init__(self, router: Router, db_repository: MetricRepository):
         self.router = router
         self.db_repository = db_repository
         self.setup_handlers()

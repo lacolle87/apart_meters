@@ -1,24 +1,25 @@
-from database.models import WaterMetric
+from database.models import Metric
 
 
-class WaterMetricRepository:
-    def __init__(self, session):
+class MetricRepository:
+    def __init__(self, session, logger):
+        self.logger = logger
         self.session = session
 
     def get_metrics_for_user(self, user_id):
         try:
-            return self.session.query(WaterMetric.amount, WaterMetric.unit).filter_by(user_id=user_id).all()
+            return self.session.query(Metric.water_usage, Metric.electric_usage).filter_by(user_id=user_id).all()
         except Exception as e:
-            print(f"Error fetching metrics: {e}")
+            self.logger.error(f"Error fetching metrics: {e}")
             return []
 
-    def add_metrics_for_user(self, user_id, amount, unit):
+    def add_metrics_for_user(self, user_id, water, electricity):
         try:
-            metric = WaterMetric(user_id=user_id, amount=amount, unit=unit)
+            metric = Metric(user_id=user_id, water_usage=water, electric_usage=electricity)
             self.session.add(metric)
             self.session.commit()
-            return amount, unit
+            return water, electricity
         except Exception as e:
             self.session.rollback()
-            print(f"Error adding metrics: {e}")
+            self.logger.error(f"Error adding metrics: {e}")
             return None
