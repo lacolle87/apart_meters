@@ -24,10 +24,12 @@ async def main():
 
     try:
         await dp.start_polling(bot)
+    except asyncio.CancelledError:
+        print("Program was cancelled.")
     except KeyboardInterrupt:
-        logging.info("Keyboard interrupt received, stopping the program gracefully.")
+        print("Keyboard interrupt received, stopping the program gracefully.")
     finally:
-        logging.info(db.close())
+        print(db.close())
 
 
 if __name__ == '__main__':
