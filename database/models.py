@@ -4,7 +4,6 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -16,16 +15,15 @@ class User(Base):
     in_location = Column(Boolean)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-
 class Rates(Base):
     __tablename__ = 'rates'
     id = Column(Integer, primary_key=True, autoincrement=True)
     electric_rate = Column(Float)
     water_rate = Column(Float)
     drainage_rate = Column(Float)
+    apartment_id = Column(Integer, ForeignKey('appartments.id'))
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 
 class Appartments(Base):
     __tablename__ = 'appartments'
@@ -33,8 +31,7 @@ class Appartments(Base):
     name = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-
-class Metric(Base):
+class Metrics(Base):
     __tablename__ = 'metrics'
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id'))
@@ -42,4 +39,3 @@ class Metric(Base):
     electric_usage = Column(Float)
     user = relationship('User', back_populates='metrics')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
