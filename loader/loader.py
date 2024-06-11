@@ -9,7 +9,6 @@ def init_bot():
 
     api_token = os.getenv('API_TOKEN')
     bot = Bot(token=api_token)
-
     return bot
 
 

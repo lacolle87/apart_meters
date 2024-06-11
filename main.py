@@ -1,8 +1,9 @@
 import logging
 import asyncio
 from aiogram import Dispatcher
-from handlers.bot import router
+from handlers.bot import router, setup_handlers
 from loader.loader import init_bot, init_database
+from database.repositories import WaterMetricRepository
 
 
 async def main():
@@ -12,6 +13,11 @@ async def main():
     db = init_database()
     dp = Dispatcher()
 
+    db_session = db.get_session()
+    db_repository = WaterMetricRepository(db_session)
+
+    setup_handlers(router, db_repository)
+
     dp.include_router(router)
 
     try:
@@ -19,7 +25,8 @@ async def main():
     except KeyboardInterrupt:
         logging.info("Keyboard interrupt received, stopping the program gracefully.")
     finally:
-        print(db.close_database)
+        logging.info(db.close())
+
 
 if __name__ == '__main__':
     asyncio.run(main())
