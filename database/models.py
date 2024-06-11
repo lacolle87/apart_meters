@@ -4,18 +4,16 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, autoincrement=True)
     chat_id = Column(Integer, unique=True, nullable=False)
     username = Column(String, unique=True)
     first_name = Column(String)
-    water_metrics = relationship('Metric', back_populates='user')
-    apartment_id = Column(Integer, ForeignKey('appartments.id'))  # Corrected foreign key
+    metrics = relationship('Metric', back_populates='user')
+    apartment_id = Column(Integer, ForeignKey('appartments.id'))
     live = Column(Boolean)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 
 class Rates(Base):
     __tablename__ = 'rates'
@@ -26,13 +24,11 @@ class Rates(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-
 class Appartments(Base):
     __tablename__ = 'appartments'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
 
 class Metric(Base):
     __tablename__ = 'metrics'
