@@ -3,6 +3,7 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+
 class WaterMetric(Base):
     __tablename__ = 'water_metrics'
     id = Column(Integer, primary_key=True)

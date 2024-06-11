@@ -1,5 +1,6 @@
 from database.models import WaterMetric
 
+
 class WaterMetricRepository:
     def __init__(self, session):
         self.session = session

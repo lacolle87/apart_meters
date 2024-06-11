@@ -4,6 +4,7 @@ from aiogram import Router
 from utils.utils import format_metrics
 from database.repositories import WaterMetricRepository
 
+
 class BotHandler:
     def __init__(self, router: Router, db_repository: WaterMetricRepository):
         self.router = router
@@ -17,11 +18,12 @@ class BotHandler:
 
         @self.router.message(Command('help'))
         async def help_message(message: Message):
-            await message.answer("You can send your water intake metrics in the format: 'amount unit', e.g., '200 ml'.\n"
-                                 "Commands:\n"
-                                 "/start - Start the bot\n"
-                                 "/help - Get help\n"
-                                 "/metrics - View your water metrics")
+            await message.answer(
+                "You can send your water intake metrics in the format: 'amount unit', e.g., '200 ml'.\n"
+                "Commands:\n"
+                "/start - Start the bot\n"
+                "/help - Get help\n"
+                "/metrics - View your water metrics")
 
         @self.router.message(Command('metrics'))
         async def view_metrics(message: Message):

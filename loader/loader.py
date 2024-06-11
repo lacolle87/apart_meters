@@ -4,15 +4,22 @@ from aiogram import Bot
 from database.database import Database
 
 
-def init_bot():
-    load_dotenv()
+def init_bot(logger):
+    try:
+        load_dotenv()
+        api_token = os.getenv('API_TOKEN')
+        bot = Bot(token=api_token)
+        return bot
+    except Exception as e:
+        logger.error(f"Failed to initialize bot: {e}")
+        return None
 
-    api_token = os.getenv('API_TOKEN')
-    bot = Bot(token=api_token)
-    return bot
 
-
-def init_database():
-    engine = 'sqlite:///water_metrics.db'
-    db = Database(engine)
-    return db
+def init_database(logger):
+    try:
+        engine = 'sqlite:///water_metrics.db'
+        db = Database(engine)
+        return db
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        return None
