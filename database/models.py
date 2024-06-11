@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 
 Base = declarative_base()
 
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -15,6 +16,7 @@ class User(Base):
     live = Column(Boolean)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+
 class Rates(Base):
     __tablename__ = 'rates'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -24,11 +26,13 @@ class Rates(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+
 class Appartments(Base):
     __tablename__ = 'appartments'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 
 class Metric(Base):
     __tablename__ = 'metrics'
