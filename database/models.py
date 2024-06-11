@@ -13,7 +13,7 @@ class User(Base):
     first_name = Column(String)
     metrics = relationship('Metric', back_populates='user')
     apartment_id = Column(Integer, ForeignKey('appartments.id'))
-    live = Column(Boolean)
+    in_location = Column(Boolean)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
