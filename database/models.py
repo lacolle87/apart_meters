@@ -42,3 +42,4 @@ class Metric(Base):
     electric_usage = Column(Float)
     user = relationship('User', back_populates='metrics')
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
