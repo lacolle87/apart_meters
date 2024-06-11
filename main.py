@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from aiogram import Dispatcher, Router
-from handlers.bot import BotHandler
+from handlers.bot_handler import BotHandler
 from loader.loader import init_bot, init_database
 from database.repositories import WaterMetricRepository
 

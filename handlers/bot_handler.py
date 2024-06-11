@@ -36,7 +36,7 @@ class BotHandler:
             text = message.text
             try:
                 amount, unit = text.split()
-                amount = float(amount)  # Ensure amount is a valid float
+                amount = float(amount)
 
                 recorded_amount, recorded_unit = self.db_repository.add_metrics_for_user(user_id, amount, unit)
                 if recorded_amount is not None:
