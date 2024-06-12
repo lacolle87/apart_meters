@@ -17,8 +17,8 @@ def init_bot(logger):
 
 def init_database(logger):
     try:
-        engine = 'sqlite:///water_metrics.db'
-        db = Database(engine)
+        engine = 'sqlite:///metrics.db'
+        db = Database(engine, logger)
         return db
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")

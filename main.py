@@ -7,7 +7,15 @@ from database.repositories import MetricRepository
 from logger.logger import setup_logger
 
 
-async def main():
+async def main(bot_instance, dispatcher, logger_instance):
+    try:
+        await dispatcher.start_polling(bot_instance)
+    except Exception as e:
+        logger_instance.error(f"An error occurred: {e}")
+    finally:
+        logger_instance.info("Shutting down...")
+
+if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     logger = setup_logger()
 
@@ -25,14 +33,8 @@ async def main():
     dp.include_router(router)
 
     try:
-        await dp.start_polling(bot)
-    except asyncio.CancelledError:
-        logger.info("Program was cancelled.")
+        asyncio.run(main(bot, dp, logger))
     except KeyboardInterrupt:
         logger.info("Keyboard interrupt received, stopping the program gracefully.")
     finally:
         logger.info(db.close())
-
-
-if __name__ == '__main__':
-    asyncio.run(main())

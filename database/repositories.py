@@ -1,4 +1,4 @@
-from database.models import Metrics
+from database.models import Metric
 
 
 class MetricRepository:
@@ -8,14 +8,14 @@ class MetricRepository:
 
     def get_metrics_for_user(self, user_id):
         try:
-            return self.session.query(Metrics.water_usage, Metrics.electric_usage).filter_by(user_id=user_id).all()
+            return self.session.query(Metric.water_usage, Metric.electric_usage).filter_by(user_id=user_id).all()
         except Exception as e:
             self.logger.error(f"Error fetching metrics: {e}")
             return []
 
     def add_metrics_for_user(self, user_id, water, electricity):
         try:
-            metric = Metrics(user_id=user_id, water_usage=water, electric_usage=electricity)
+            metric = Metric(user_id=user_id, water_usage=water, electric_usage=electricity)
             self.session.add(metric)
             self.session.commit()
             return water, electricity
