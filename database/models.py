@@ -30,6 +30,7 @@ class Rate(Base, TimestampMixin):
     water_rate = Column(Float, nullable=False)
     drainage_rate = Column(Float, nullable=False)
     apartment_id = Column(Integer, ForeignKey('apartments.id'))
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
 class Apartment(Base, TimestampMixin):
