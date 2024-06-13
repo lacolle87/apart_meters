@@ -69,18 +69,10 @@ class RateService:
 
     def get_rate_by_apartment_name(self, apartment_name: str):
         try:
-            apartment = self.session.query(Apartment).filter_by(name=apartment_name).one_or_none()
-
-            if not apartment:
-                self.logger.error(f"Apartment with name {apartment_name} not found")
-                return None
-
-            apartment_id = apartment.id
-
             rate = (
                 self.session.query(Rate)
                 .join(Apartment)
-                .filter(Apartment.id == apartment_id)
+                .filter(name=apartment_name)
                 .one_or_none()
             )
 
@@ -100,13 +92,11 @@ class RateService:
                 self.logger.error(f"Apartment with name {apartment_name} not found")
                 return None
 
-            apartment_id = int(apartment.id)
-
             rate = Rate(
                 electric_rate=electric_rate,
                 water_rate=water_rate,
                 drainage_rate=drainage_rate,
-                apartment_id=apartment_id
+                apartment_id=apartment.id
             )
             self.session.add(rate)
             self.session.commit()
@@ -119,12 +109,13 @@ class RateService:
     def update_rate(self, apartment_name: str, electric_rate: float = None, water_rate: float = None,
                     drainage_rate: float = None):
         try:
-            apartment = self.session.query(Apartment).filter_by(name=apartment_name).one_or_none()
-            if not apartment:
-                self.logger.error(f"Apartment with name {apartment_name} not found")
-                return None
+            rate = (
+                self.session.query(Rate)
+                .join(Apartment)
+                .filter(name=apartment_name)
+                .one_or_none()
+            )
 
-            rate = self.session.query(Rate).filter_by(apartment_id=apartment.id).one_or_none()
             if not rate:
                 self.logger.error(f"Rate for apartment {apartment_name} not found")
                 return None
@@ -160,7 +151,7 @@ class ApartmentService:
         try:
             return self.session.query(Apartment).filter_by(name=apartment_name).one_or_none()
         except Exception as e:
-            self.logger.error(f"Error fetching apartment by id: {e}")
+            self.logger.error(f"Error fetching apartment by name: {e}")
             return None
 
     def add_apartment(self, name: str, address: str):
@@ -193,21 +184,20 @@ class MetricService:
     def add_metrics_for_user(self, chat_id: int, water: float, electricity: float):
         try:
             user = self.session.query(User).filter_by(chat_id=chat_id).first()
-            user_id = int(user.id)
 
-            if user:
-                metric = Metric(
-                    user_id=user_id,
-                    water_usage=water,
-                    electric_usage=electricity
-                )
-                self.session.add(metric)
-                self.session.commit()
-                return metric
-            else:
+            if not user:
                 self.logger.error(f"User with chat_id {chat_id} not found.")
                 return None
 
+            metric = Metric(
+                user_id=user.id,
+                water_usage=water,
+                electric_usage=electricity,
+                apartment_id=user.apartment_id
+            )
+            self.session.add(metric)
+            self.session.commit()
+            return metric
         except Exception as e:
             self.session.rollback()
             self.logger.error(f"Error adding metrics: {e}")
