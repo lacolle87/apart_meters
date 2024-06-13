@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Dispatcher, Router
 from handlers.bot_handler import BotHandler
 from loader.loader import init_bot, init_database
-from database.repositories import MetricRepository
+from database.services import MetricRepository
 from logger.logger import setup_logger
 
 

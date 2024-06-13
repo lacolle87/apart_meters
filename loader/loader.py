@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from aiogram import Bot
-from database.database import Database
+from database.dbmanager import Database
 
 
 def init_bot(logger):

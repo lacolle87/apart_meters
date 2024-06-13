@@ -9,28 +9,8 @@ class TimestampMixin:
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-class User(Base, TimestampMixin):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    chat_id = Column(Integer, unique=True, nullable=False)
-    username = Column(String, unique=True)
-    first_name = Column(String)
+class ApartmentMixin:
     apartment_id = Column(Integer, ForeignKey('apartments.id'))
-    in_location = Column(Boolean)
-    metrics = relationship('Metric', back_populates='user')
-    is_admin = Column(Boolean, default=False)
-
-
-class Rate(Base, TimestampMixin):
-    __tablename__ = 'rates'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    electric_rate = Column(Float, nullable=False)
-    water_rate = Column(Float, nullable=False)
-    drainage_rate = Column(Float, nullable=False)
-    apartment_id = Column(Integer, ForeignKey('apartments.id'))
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
 class Apartment(Base, TimestampMixin):
@@ -38,14 +18,40 @@ class Apartment(Base, TimestampMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
-    address = Column(String, nullable=False)
+    address = Column(String)
+    users = relationship("User", backref="apartment", foreign_keys="[User.apartment_id]")
+    rates = relationship("Rate", backref="apartment", foreign_keys="[Rate.apartment_id]")
+    metrics = relationship("Metric", backref="apartment", foreign_keys="[Metric.apartment_id]")
 
 
-class Metric(Base, TimestampMixin):
+class User(Base, TimestampMixin, ApartmentMixin):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    chat_id = Column(Integer, unique=True, nullable=False)
+    username = Column(String, unique=True)
+    first_name = Column(String)
+    in_location = Column(Boolean)
+    is_admin = Column(Boolean, default=False)
+    apartment = relationship("Apartment")
+
+
+class Rate(Base, TimestampMixin, ApartmentMixin):
+    __tablename__ = 'rates'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    electric_rate = Column(Float, nullable=False)
+    water_rate = Column(Float, nullable=False)
+    drainage_rate = Column(Float, nullable=False)
+    apartment = relationship("Apartment")
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class Metric(Base, TimestampMixin, ApartmentMixin):
     __tablename__ = 'metrics'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    water_usage = Column(Float, nullable=False)
     electric_usage = Column(Float, nullable=False)
-    user = relationship('User', back_populates='metrics')
+    water_usage = Column(Float, nullable=False)
+    apartment = relationship("Apartment")
