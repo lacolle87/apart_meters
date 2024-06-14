@@ -22,7 +22,6 @@ class User(Base, TimestampMixin, ApartmentMixin):
     first_name = Column(String)
     in_location = Column(Boolean)
     is_admin = Column(Boolean, default=False)
-    apartment = relationship("Apartment")
 
 
 class Rate(Base, TimestampMixin, ApartmentMixin):
@@ -32,7 +31,6 @@ class Rate(Base, TimestampMixin, ApartmentMixin):
     electric_rate = Column(Float, nullable=False)
     water_rate = Column(Float, nullable=False)
     drainage_rate = Column(Float, nullable=False)
-    apartment = relationship("Apartment")
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
@@ -54,4 +52,3 @@ class Metric(Base, TimestampMixin, ApartmentMixin):
     user_id = Column(Integer, ForeignKey('users.id'))
     electric_usage = Column(Float, nullable=False)
     water_usage = Column(Float, nullable=False)
-    apartment = relationship("Apartment")
