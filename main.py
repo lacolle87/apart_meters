@@ -3,7 +3,8 @@ import asyncio
 from aiogram import Dispatcher, Router
 from handlers.bot_handler import BotHandler
 from loader.loader import init_bot, init_database
-from database.services import MetricRepository
+from services.metric import MetricService
+from services.apartment import ApartmentService
 from logger.logger import setup_logger
 
 
@@ -24,11 +25,12 @@ if __name__ == '__main__':
     dp = Dispatcher()
 
     db_session = db.get_session()
-    db_repository = MetricRepository(db_session, logger)
+    metric_service = MetricService(db_session, logger)
+    apartment_service = ApartmentService(db_session, logger)
 
     router = Router()
 
-    BotHandler(router, db_repository)
+    BotHandler(router, metric_service, apartment_service)
 
     dp.include_router(router)
 

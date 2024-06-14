@@ -1,14 +1,28 @@
-from aiogram.filters import Command
-from aiogram.types import Message
 from aiogram import Router
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import Message
+
 from utils.utils import format_metrics
-from database.services import MetricService
+from services.metric import MetricService
+from services.apartment import ApartmentService
+
+
+class AddApartment(StatesGroup):
+    waiting_for_apartment_name = State()
+    waiting_for_apartment_address = State()
+
+
+class AddMetrics(StatesGroup):
+    waiting_for_metrics = State()
 
 
 class BotHandler:
-    def __init__(self, router: Router, db_repository: MetricService):
+    def __init__(self, router: Router, metric_service: MetricService, apartment_service: ApartmentService):
         self.router = router
-        self.db_repository = db_repository
+        self.metric_service = metric_service
+        self.apartment_service = apartment_service
         self.setup_handlers()
 
     def setup_handlers(self):
@@ -23,27 +37,56 @@ class BotHandler:
                 "Commands:\n"
                 "/start - Start the bot\n"
                 "/help - Get help\n"
-                "/metrics - View your water metrics")
+                "/metrics - View your water metrics\n"
+                "/addmetrics - Add your water and electric metrics\n"
+                "/addapartment - Add a new apartment")
 
         @self.router.message(Command('metrics'))
         async def view_metrics(message: Message):
             user_id = message.from_user.id
-            metrics = self.db_repository.get_metrics_for_user(user_id)
+            metrics = self.metric_service.get_metrics_for_user(user_id)
             response = format_metrics(metrics)
             await message.answer(response)
 
-        @self.router.message()
-        async def record_metrics_handler(message: Message):
-            user_id = message.from_user.id
-            text = message.text
-            try:
-                amount, unit = text.split()
-                amount = float(amount)
+        @self.router.message(Command('addapartment'))
+        async def add_apartment_start(message: Message, state: FSMContext):
+            await message.answer("Please enter the apartment name:")
+            await state.set_state(AddApartment.waiting_for_apartment_name)
 
-                recorded_amount, recorded_unit = self.db_repository.add_metrics_for_user(user_id, amount, unit)
-                if recorded_amount is not None:
-                    await message.answer(f"Recorded: {recorded_amount} {recorded_unit}")
+        @self.router.message(AddApartment.waiting_for_apartment_name)
+        async def apartment_name_entered(message: Message, state: FSMContext):
+            await state.update_data(apartment_name=message.text)
+            await message.answer("Please enter the apartment address:")
+            await state.set_state(AddApartment.waiting_for_apartment_address)
+
+        @self.router.message(AddApartment.waiting_for_apartment_address)
+        async def apartment_address_entered(message: Message, state: FSMContext):
+            user_data = await state.get_data()
+            apartment_name = user_data['apartment_name']
+            apartment_address = message.text
+            self.apartment_service.add_apartment(apartment_name, apartment_address)
+            await message.answer(f"Apartment '{apartment_name}' at '{apartment_address}' added successfully.")
+            await state.clear()
+
+        @self.router.message(Command('addmetrics'))
+        async def add_metrics_start(message: Message, state: FSMContext):
+            await message.answer(
+                "Please enter the water and electric metrics in the format: 'water electric', e.g., '200 150'.")
+            await state.set_state(AddMetrics.waiting_for_metrics)
+
+        @self.router.message(AddMetrics.waiting_for_metrics)
+        async def metrics_entered(message: Message, state: FSMContext):
+            user_id = message.from_user.id
+            try:
+                water, electric = map(float, message.text.split())
+                recorded_metric = self.metric_service.add_metrics_for_user(user_id, water, electric)
+                if recorded_metric:
+                    await message.answer(
+                        f"Recorded: Water - {recorded_metric.water_usage}, "
+                        f"Electricity - {recorded_metric.electric_usage}")
                 else:
                     await message.answer("Failed to record metrics. Please try again.")
             except ValueError:
-                await message.answer("Invalid format. Please send in the format: 'amount unit', e.g., '200 ml'.")
+                await message.answer("Invalid format. Please send in the format: 'water electric', e.g., '200 150'.")
+                return
+            await state.clear()
