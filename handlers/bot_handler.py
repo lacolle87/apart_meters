@@ -7,6 +7,7 @@ from aiogram.types import Message
 from utils.utils import format_metrics
 from services.metric import MetricService
 from services.apartment import ApartmentService
+from services.user import UserService
 
 
 class AddApartment(StatesGroup):
@@ -18,11 +19,23 @@ class AddMetrics(StatesGroup):
     waiting_for_metrics = State()
 
 
+class AddUser(StatesGroup):
+    waiting_for_user_name = State()
+
+
 class BotHandler:
-    def __init__(self, router: Router, metric_service: MetricService, apartment_service: ApartmentService):
+    def __init__(self,
+                 router: Router,
+                 user_service: UserService,
+                 apartment_service: ApartmentService,
+                 metric_service: MetricService,
+                 logger
+                 ):
         self.router = router
-        self.metric_service = metric_service
+        self.user_service = user_service
         self.apartment_service = apartment_service
+        self.metric_service = metric_service
+        self.logger = logger
         self.setup_handlers()
 
     def setup_handlers(self):
@@ -76,10 +89,10 @@ class BotHandler:
 
         @self.router.message(AddMetrics.waiting_for_metrics)
         async def metrics_entered(message: Message, state: FSMContext):
-            user_id = message.from_user.id
+            chat_id = message.from_user.id
             try:
                 water, electric = map(float, message.text.split())
-                recorded_metric = self.metric_service.add_metrics_for_user(user_id, water, electric)
+                recorded_metric = self.metric_service.add_metrics_for_user(chat_id, water, electric)
                 if recorded_metric:
                     await message.answer(
                         f"Recorded: Water - {recorded_metric.water_usage}, "
@@ -90,3 +103,29 @@ class BotHandler:
                 await message.answer("Invalid format. Please send in the format: 'water electric', e.g., '200 150'.")
                 return
             await state.clear()
+
+        @self.router.message(Command('adduser'))
+        async def add_user_start(message: Message, state: FSMContext):
+            await message.answer("Please enter your username:")
+            await state.set_state(AddUser.waiting_for_user_name)
+
+        @self.router.message(AddUser.waiting_for_user_name)
+        async def user_entered(message: Message, state: FSMContext):
+            chat_id, user_name = message.text.split(" ")
+            try:
+                user = self.user_service.add_user(chat_id,
+                                                  user_name,
+                                                  first_name=user_name,
+                                                  apartment_id=1,
+                                                  in_location=True
+                                                  )
+                if user:
+                    await message.answer(f"User {user_name} added successfully.")
+                else:
+                    await message.answer("Failed to add user. Please try again.")
+            except Exception as ex:
+                error_message = "Failed to add user. Please try again."
+                self.logger.error(f"Error adding user: {ex}")
+                await message.answer(error_message)
+            finally:
+                await state.clear()

@@ -5,6 +5,7 @@ from handlers.bot_handler import BotHandler
 from loader.loader import init_bot, init_database
 from services.metric import MetricService
 from services.apartment import ApartmentService
+from services.user import UserService
 from logger.logger import setup_logger
 
 
@@ -25,12 +26,14 @@ if __name__ == '__main__':
     dp = Dispatcher()
 
     db_session = db.get_session()
-    metric_service = MetricService(db_session, logger)
+
+    user_service = UserService(db_session, logger)
     apartment_service = ApartmentService(db_session, logger)
+    metric_service = MetricService(db_session, logger)
 
     router = Router()
 
-    BotHandler(router, metric_service, apartment_service)
+    BotHandler(router, user_service, apartment_service, metric_service, logger)
 
     dp.include_router(router)
 
