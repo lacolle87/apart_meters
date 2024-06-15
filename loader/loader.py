@@ -23,3 +23,17 @@ def init_database(logger):
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         return None
+
+
+def init_su(user_service, logger):
+    su = os.getenv('SUPERUSER')
+    superuser = user_service.get_user_by_chat_id(su)
+    if superuser and superuser.is_admin:
+        logger.info(f"Superuser with chat_id {su} found")
+    elif superuser and not superuser.is_admin:
+        user_service.make_admin(su)
+        logger.info(f"Superuser with chat_id {su} made admin")
+    else:
+        user_service.add_user(su, 'superuser', 'superuser', None, False)
+        user_service.make_admin(su)
+        logger.info(f"Superuser with chat_id {su} not found")

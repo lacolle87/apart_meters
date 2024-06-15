@@ -2,7 +2,7 @@ import logging
 import asyncio
 from aiogram import Dispatcher, Router
 from handlers.bot_handler import BotHandler
-from loader.loader import init_bot, init_database
+from loader.loader import init_bot, init_database, init_su
 from services.metric import MetricService
 from services.apartment import ApartmentService
 from services.user import UserService
@@ -30,6 +30,8 @@ if __name__ == '__main__':
     user_service = UserService(db_session, logger)
     apartment_service = ApartmentService(db_session, logger)
     metric_service = MetricService(db_session, logger)
+
+    init_su(user_service, logger)
 
     router = Router()
 
