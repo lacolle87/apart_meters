@@ -8,6 +8,7 @@ from utils.utils import format_metrics
 from services.metric import MetricService
 from services.apartment import ApartmentService
 from services.user import UserService
+from handlers.middleware import AuthMiddleware
 
 
 class AddApartment(StatesGroup):
@@ -39,6 +40,8 @@ class BotHandler:
         self.setup_handlers()
 
     def setup_handlers(self):
+        self.router.message.middleware(AuthMiddleware(self.user_service))
+
         @self.router.message(Command('start'))
         async def send_welcome(message: Message):
             await message.answer("Welcome! Send me your water metrics in the format: 'amount unit', e.g., '200 ml'.")
