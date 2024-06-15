@@ -60,3 +60,10 @@ class UserService:
             self.session.rollback()
             self.logger.error(f"Error removing admin from user: {e}")
             return None
+
+    def get_admins(self):
+        try:
+            return self.session.query(User).filter_by(is_admin=True).all()
+        except Exception as e:
+            self.logger.error(f"Error fetching admins: {e}")
+            return None

@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -29,18 +29,21 @@ class BotHandler:
                  router: Router,
                  user_service: UserService,
                  apartment_service: ApartmentService,
-                 metric_service: MetricService,
-                 logger
-                 ):
+                 metric_service:
+                 MetricService,
+                 bot: Bot,
+                 logger):
         self.router = router
         self.user_service = user_service
         self.apartment_service = apartment_service
         self.metric_service = metric_service
+        self.bot = bot
         self.logger = logger
+        self.auth_middleware = AuthMiddleware(self.user_service, self.bot)
         self.setup_handlers()
 
     def setup_handlers(self):
-        self.router.message.middleware(AuthMiddleware(self.user_service))
+        self.router.message.middleware(self.auth_middleware)
 
         @self.router.message(Command('start'))
         async def send_welcome(message: Message):
@@ -132,3 +135,7 @@ class BotHandler:
                 await message.answer(error_message)
             finally:
                 await state.clear()
+
+        @self.router.message()
+        async def handle_admin_response(message: Message):
+            await self.auth_middleware.process_approval(message)

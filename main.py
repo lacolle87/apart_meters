@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     router = Router()
 
-    BotHandler(router, user_service, apartment_service, metric_service, logger)
+    BotHandler(router, user_service, apartment_service, metric_service, bot, logger)
 
     dp.include_router(router)
 
