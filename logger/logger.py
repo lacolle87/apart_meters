@@ -1,6 +1,7 @@
 import logging
 import os
 
+
 def setup_logger():
     logs_dir = 'logs'
     if not os.path.exists(logs_dir):

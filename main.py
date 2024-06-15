@@ -1,12 +1,9 @@
 import logging
 import asyncio
 from aiogram import Dispatcher, Router
-from handlers.bot_handler import BotHandler
-from loader.loader import init_bot, init_database, init_su
-from services.metric import MetricService
-from services.apartment import ApartmentService
-from services.user import UserService
+from loader.loader import init_bot, init_database
 from logger.logger import setup_logger
+from setup.bot_setup import BotSetup
 
 
 async def main(bot_instance, dispatcher, logger_instance):
@@ -16,6 +13,7 @@ async def main(bot_instance, dispatcher, logger_instance):
         logger_instance.error(f"An error occurred: {e}")
     finally:
         logger_instance.info("Shutting down...")
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
@@ -27,15 +25,11 @@ if __name__ == '__main__':
 
     db_session = db.get_session()
 
-    user_service = UserService(db_session, logger)
-    apartment_service = ApartmentService(db_session, logger)
-    metric_service = MetricService(db_session, logger)
-
-    init_su(user_service, logger)
-
     router = Router()
 
-    BotHandler(router, user_service, apartment_service, metric_service, bot, logger)
+    bot_setup = BotSetup(bot, router, db_session, logger)
+
+    bot_setup.init_su()
 
     dp.include_router(router)
 

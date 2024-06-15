@@ -20,7 +20,7 @@ class AuthMiddleware(BaseMiddleware):
             if user_id in self.pending_approvals:
                 await event.answer("Your registration is pending approval. Please wait for the superuser to confirm.")
                 return
-
+            await event.answer("You are not registered. Waiting for approval.")
             await self.bot.send_message(
                 admins[0].chat_id,
                 f"New user {event.from_user.username} ({user_id}) is trying to access the bot. Approve? Reply with 'yes' or 'no'."
