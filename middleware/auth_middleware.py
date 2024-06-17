@@ -32,3 +32,6 @@ class AuthMiddleware(BaseMiddleware):
         await event.answer("You are not registered. Waiting for approval.")
         await self.notifier.notify_admin_of_new_user(event, user_id)
         self.pending_approvals[user_id] = event.from_user.username
+
+    async def process_approval(self, message: Message):
+        await self.approval_handler.process_approval(message)
