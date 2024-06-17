@@ -2,9 +2,9 @@ import os
 from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.types import Message
-from services.metric import MetricService
-from services.apartment import ApartmentService
-from services.user import UserService
+from services.metric_service import MetricService
+from services.apartment_service import ApartmentService
+from services.user_service import UserService
 from handlers.middleware import AuthMiddleware
 from handlers.apartment_handler import ApartmentHandler, AddApartment
 from handlers.metrics_handler import MetricsHandler, AddMetrics
