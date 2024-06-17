@@ -5,7 +5,7 @@ from aiogram.types import Message
 from services.metric_service import MetricService
 from services.apartment_service import ApartmentService
 from services.user_service import UserService
-from handlers.middleware import AuthMiddleware
+from middleware.auth_middleware import AuthMiddleware
 from handlers.apartment_handler import ApartmentHandler, AddApartment
 from handlers.metrics_handler import MetricsHandler, AddMetrics
 from handlers.user_handler import UserHandler, AddUser

@@ -1,40 +1,13 @@
-from aiogram.dispatcher.middlewares.base import BaseMiddleware
 from aiogram.types import Message
 from services.user_service import UserService
 from aiogram import Bot
 
 
-class AuthMiddleware(BaseMiddleware):
-    def __init__(self, user_service: UserService, bot: Bot):
-        super().__init__()
+class UserApprovalHandler:
+    def __init__(self, user_service: UserService, bot: Bot, pending_approvals: dict):
         self.user_service = user_service
         self.bot = bot
-        self.pending_approvals = {}
-
-    async def __call__(self, handler, event: Message, data: dict):
-        user_id = event.from_user.id
-        user = self.user_service.get_user_by_chat_id(user_id)
-
-        if user:
-            return await handler(event, data)
-
-        await self.handle_unregistered_user(event, user_id)
-
-    async def handle_unregistered_user(self, event: Message, user_id: int):
-        if user_id in self.pending_approvals:
-            await event.answer("Your registration is pending approval. Please wait for the superuser to confirm.")
-            return
-
-        await event.answer("You are not registered. Waiting for approval.")
-        await self.notify_admin_of_new_user(event, user_id)
-        self.pending_approvals[user_id] = event.from_user.username
-
-    async def notify_admin_of_new_user(self, event: Message, user_id: int):
-        admins = self.user_service.get_admins()
-        await self.bot.send_message(
-            admins[0].chat_id,
-            f"New user {event.from_user.username} ({user_id}) is trying to access the bot. Approve? Reply with 'yes' or 'no'."
-        )
+        self.pending_approvals = pending_approvals
 
     async def process_approval(self, message: Message):
         if not self.is_authorized_admin(message.from_user.id):
