@@ -52,17 +52,22 @@ class BotSetup:
         self.router.message.register(
             self.add_apartment_handler.apartment_address_entered, AddApartment.waiting_for_apartment_address)
         self.router.message.register(
-            self.add_metrics_handler.add_metrics_start, Command('addmetrics'))
+            self.add_metrics_handler.add_metrics_start, Command('addmetrics'), self.is_admin_filter)
         self.router.message.register(
             self.add_metrics_handler.metrics_entered, AddMetrics.waiting_for_metrics)
         self.router.message.register(
-            self.add_user_handler.add_user_start, Command('adduser'))
+            self.add_user_handler.add_user_start, Command('adduser'), self.is_admin_filter)
         self.router.message.register(
             self.add_user_handler.user_entered, AddUser.waiting_for_user_name)
 
-        async def default_handler(message: Message):
+        async def process_handler(message: Message):
             await self.auth_middleware.process_approval(message)
-        self.router.message.register(default_handler)
+
+        async def reject(message: Message):
+            await message.answer("You are not authorized to use this command.")
+
+        self.router.message.register(process_handler, self.is_admin_filter)
+        self.router.message.register(reject)
 
     def init_su(self):
         try:
