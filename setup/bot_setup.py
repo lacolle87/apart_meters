@@ -33,51 +33,71 @@ class BotSetup:
         self.command_handlers = CommandHandlers()
         self.view_metrics_handler = MetricsHandler(self.metric_service)
 
-        self.setup_handlers()
+        # Setup message handlers
+        self.setup_message_handlers()
 
-    def setup_handlers(self):
+    def setup_message_handlers(self):
         self.router.message.middleware(self.auth_middleware)
 
-        self.router.message.register(
-            self.command_handlers.send_welcome, Command('start'))
-        self.router.message.register(
-            self.command_handlers.help_message, Command('help'))
-        self.router.message.register(
-            self.view_metrics_handler.view_metrics, Command('metrics'))
+        self.register_command_handlers()
 
-        self.router.message.register(
-            self.add_apartment_handler.add_apartment_start, Command('addapartment'), self.is_admin_filter)
-        self.router.message.register(
-            self.add_apartment_handler.apartment_name_entered, AddApartment.waiting_for_apartment_name)
-        self.router.message.register(
-            self.add_apartment_handler.apartment_address_entered, AddApartment.waiting_for_apartment_address)
-        self.router.message.register(
-            self.add_metrics_handler.add_metrics_start, Command('addmetrics'), self.is_admin_filter)
-        self.router.message.register(
-            self.add_metrics_handler.metrics_entered, AddMetrics.waiting_for_metrics)
-        self.router.message.register(
-            self.add_user_handler.add_user_start, Command('adduser'), self.is_admin_filter)
-        self.router.message.register(
-            self.add_user_handler.user_entered, AddUser.waiting_for_user_name)
+        self.register_admin_handlers()
 
-        async def process_handler(message: Message):
-            await self.auth_middleware.process_approval(message)
+        self.register_authorization_handlers()
 
-        async def reject(message: Message):
-            await message.answer("You are not authorized to use this command.")
+    def register_command_handlers(self):
+        commands = [
+            ('start', self.command_handlers.send_welcome),
+            ('help', self.command_handlers.help_message),
+            ('metrics', self.view_metrics_handler.view_metrics)
+        ]
+        for command, handler in commands:
+            self.router.message.register(handler, Command(command))
 
-        self.router.message.register(process_handler, self.is_admin_filter)
-        self.router.message.register(reject)
+    def register_admin_handlers(self):
+        admin_handlers = [
+            ('addapartment', self.add_apartment_handler.add_apartment_start, self.is_admin_filter),
+            ('addmetrics', self.add_metrics_handler.add_metrics_start, self.is_admin_filter),
+            ('adduser', self.add_user_handler.add_user_start, self.is_admin_filter)
+        ]
+        for command, handler, filter_ in admin_handlers:
+            self.router.message.register(handler, Command(command), filter_)
+
+        apartment_subhandlers = [
+            (AddApartment.waiting_for_apartment_name, self.add_apartment_handler.apartment_name_entered),
+            (AddApartment.waiting_for_apartment_address, self.add_apartment_handler.apartment_address_entered)
+        ]
+        for state, handler in apartment_subhandlers:
+            self.router.message.register(handler, state)
+
+        metrics_subhandlers = [
+            (AddMetrics.waiting_for_metrics, self.add_metrics_handler.metrics_entered)
+        ]
+        for state, handler in metrics_subhandlers:
+            self.router.message.register(handler, state)
+
+        user_subhandlers = [
+            (AddUser.waiting_for_user_name, self.add_user_handler.user_entered)
+        ]
+        for state, handler in user_subhandlers:
+            self.router.message.register(handler, state)
+
+    def register_authorization_handlers(self):
+        self.router.message.register(self.auth_middleware.process_approval, self.is_admin_filter)
+        self.router.message.register(self.reject_unauthorized)
+
+    @staticmethod
+    async def reject_unauthorized(message: Message):
+        await message.answer("You are not authorized to use this command.")
 
     def init_su(self):
         try:
             su = int(os.getenv('SUPERUSER'))
             superuser = self.user_service.get_user_by_chat_id(su)
-            if superuser and superuser.is_admin:
-                self.logger.info(f"Superuser found")
-            elif superuser and not superuser.is_admin:
-                self.user_service.make_admin(su)
-                self.logger.info(f"Superuser made admin")
+            if superuser:
+                if not superuser.is_admin:
+                    self.user_service.make_admin(su)
+                    self.logger.info(f"Superuser made admin")
             else:
                 self.user_service.add_user(su, 'superuser', 'superuser', 0, False)
                 self.user_service.make_admin(su)

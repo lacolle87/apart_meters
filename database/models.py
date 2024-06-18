@@ -16,7 +16,7 @@ class ApartmentMixin:
 class User(Base, TimestampMixin, ApartmentMixin):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     chat_id = Column(Integer, unique=True, nullable=False)
     username = Column(String, unique=True)
     first_name = Column(String)
@@ -27,7 +27,7 @@ class User(Base, TimestampMixin, ApartmentMixin):
 class Rate(Base, TimestampMixin, ApartmentMixin):
     __tablename__ = 'rates'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     electric_rate = Column(Float, nullable=False)
     water_rate = Column(Float, nullable=False)
     drainage_rate = Column(Float, nullable=False)
@@ -37,7 +37,7 @@ class Rate(Base, TimestampMixin, ApartmentMixin):
 class Apartment(Base, TimestampMixin):
     __tablename__ = 'apartments'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     name = Column(String, unique=True, nullable=False)
     address = Column(String)
     users = relationship("User", backref="apartment", foreign_keys="[User.apartment_id]")
@@ -48,7 +48,7 @@ class Apartment(Base, TimestampMixin):
 class Metric(Base, TimestampMixin, ApartmentMixin):
     __tablename__ = 'metrics'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     electric_usage = Column(Float, nullable=False)
     water_usage = Column(Float, nullable=False)
