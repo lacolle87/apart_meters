@@ -10,6 +10,7 @@ from handlers.apartment_handler import ApartmentHandler, AddApartment
 from handlers.metrics_handler import MetricsHandler, AddMetrics
 from handlers.user_handler import UserHandler, AddUser
 from handlers.command_handler import CommandHandlers
+from filters.is_admin_filter import IsAdmin
 
 
 class BotSetup:
@@ -23,6 +24,8 @@ class BotSetup:
         self.metric_service = MetricService(db_session, logger)
 
         self.auth_middleware = AuthMiddleware(self.user_service, self.bot)
+
+        self.is_admin_filter = IsAdmin(self.user_service)
 
         self.add_apartment_handler = ApartmentHandler(self.apartment_service)
         self.add_metrics_handler = MetricsHandler(self.metric_service)
@@ -41,8 +44,9 @@ class BotSetup:
             self.command_handlers.help_message, Command('help'))
         self.router.message.register(
             self.view_metrics_handler.view_metrics, Command('metrics'))
+
         self.router.message.register(
-            self.add_apartment_handler.add_apartment_start, Command('addapartment'))
+            self.add_apartment_handler.add_apartment_start, Command('addapartment'), self.is_admin_filter)
         self.router.message.register(
             self.add_apartment_handler.apartment_name_entered, AddApartment.waiting_for_apartment_name)
         self.router.message.register(
